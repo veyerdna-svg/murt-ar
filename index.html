@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <title>МУРТ — AR прототип</title>
+  <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image.prod.js"></script>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <style>
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .hint{position:fixed;z-index:10;left:16px;right:16px;bottom:20px;padding:12px 14px;border-radius:16px;background:rgba(0,0,0,.62);backdrop-filter:blur(10px);color:#fff;text-align:center;font-size:14px;pointer-events:none}
+  </style>
+</head>
+<body>
+  <a-scene
+    mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiScanning: yes; uiLoading: yes; filterMinCF: 0.0001; filterBeta: 0.001"
+    color-space="sRGB"
+    renderer="colorManagement:true, physicallyCorrectLights"
+    vr-mode-ui="enabled:false"
+    device-orientation-permission-ui="enabled:false"
+    embedded>
+
+    <a-assets>
+      <img id="infoCard" src="./assets/info-card.png">
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+
+    <!-- target 0: чистый знак МУРТ -->
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-plane src="#infoCard" position="0.78 0.05 0.02" width="0.78" height="0.95" rotation="0 0 0"></a-plane>
+    </a-entity>
+
+    <!-- target 1: карточка/постер с логотипом -->
+    <a-entity mindar-image-target="targetIndex: 1">
+      <a-plane src="#infoCard" position="0.80 0.05 0.02" width="0.78" height="0.95" rotation="0 0 0"></a-plane>
+    </a-entity>
+  </a-scene>
+
+  <div class="hint">Наведите камеру на знак МУРТ</div>
+</body>
+</html>
