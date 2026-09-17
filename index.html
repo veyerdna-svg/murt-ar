@@ -2,19 +2,75 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-  <title>МУРТ — AR прототип</title>
+  <meta name="viewport"
+        content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+
+  <title>МУРТ — AR</title>
+
   <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image.prod.js"></script>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
   <style>
-    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    .hint{position:fixed;z-index:10;left:16px;right:16px;bottom:20px;padding:12px 14px;border-radius:16px;background:rgba(0,0,0,.62);backdrop-filter:blur(10px);color:#fff;text-align:center;font-size:14px;pointer-events:none}
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    #startButton {
+      position: fixed;
+      z-index: 100;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      padding: 16px 28px;
+      border: 0;
+      border-radius: 14px;
+      background: white;
+      color: black;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #status {
+      position: fixed;
+      z-index: 100;
+      left: 16px;
+      right: 16px;
+      bottom: 20px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.7);
+      color: white;
+      text-align: center;
+      font-size: 14px;
+    }
   </style>
 </head>
+
 <body>
+
+  <button id="startButton">Запустить камеру</button>
+
+  <div id="status">
+    Нажмите кнопку, чтобы запустить AR
+  </div>
+
   <a-scene
-    mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiScanning: yes; uiLoading: yes; filterMinCF: 0.0001; filterBeta: 0.001"
+    id="scene"
+    mindar-image="
+      imageTargetSrc: ./targets.mind;
+      autoStart: false;
+      uiScanning: yes;
+      uiLoading: yes;
+      filterMinCF: 0.0001;
+      filterBeta: 0.001
+    "
     color-space="sRGB"
     renderer="colorManagement:true, physicallyCorrectLights"
     vr-mode-ui="enabled:false"
@@ -25,19 +81,75 @@
       <img id="infoCard" src="./assets/info-card.png">
     </a-assets>
 
-    <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+    <a-camera
+      position="0 0 0"
+      look-controls="enabled:false">
+    </a-camera>
 
-    <!-- target 0: чистый знак МУРТ -->
     <a-entity mindar-image-target="targetIndex: 0">
-      <a-plane src="#infoCard" position="0.78 0.05 0.02" width="0.78" height="0.95" rotation="0 0 0"></a-plane>
+      <a-plane
+        src="#infoCard"
+        position="0.78 0.05 0.02"
+        width="0.78"
+        height="0.95"
+        rotation="0 0 0">
+      </a-plane>
     </a-entity>
 
-    <!-- target 1: карточка/постер с логотипом -->
     <a-entity mindar-image-target="targetIndex: 1">
-      <a-plane src="#infoCard" position="0.80 0.05 0.02" width="0.78" height="0.95" rotation="0 0 0"></a-plane>
+      <a-plane
+        src="#infoCard"
+        position="0.80 0.05 0.02"
+        width="0.78"
+        height="0.95"
+        rotation="0 0 0">
+      </a-plane>
     </a-entity>
+
   </a-scene>
 
-  <div class="hint">Наведите камеру на знак МУРТ</div>
+  <script>
+    const sceneEl = document.querySelector("#scene");
+    const startButton = document.querySelector("#startButton");
+    const statusEl = document.querySelector("#status");
+
+    sceneEl.addEventListener("arReady", () => {
+      startButton.style.display = "none";
+      statusEl.textContent = "Наведите камеру на знак МУРТ";
+    });
+
+    sceneEl.addEventListener("arError", (event) => {
+      statusEl.textContent = "Ошибка запуска камеры. Попробуйте ещё раз.";
+      console.error("MindAR error:", event);
+    });
+
+    startButton.addEventListener("click", async () => {
+      startButton.disabled = true;
+      startButton.textContent = "Запуск...";
+
+      statusEl.textContent = "Запрашиваем доступ к камере...";
+
+      try {
+        const arSystem = sceneEl.systems["mindar-image-system"];
+
+        if (!arSystem) {
+          throw new Error("MindAR system не найден");
+        }
+
+        await arSystem.start();
+
+      } catch (error) {
+        console.error(error);
+
+        startButton.disabled = false;
+        startButton.textContent = "Запустить камеру";
+
+        statusEl.textContent =
+          "Камера не запустилась: " +
+          (error.name || error.message || "неизвестная ошибка");
+      }
+    });
+  </script>
+
 </body>
 </html>
