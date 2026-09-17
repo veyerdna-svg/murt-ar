@@ -109,9 +109,53 @@
   </a-scene>
 
   <script>
-    const sceneEl = document.querySelector("#scene");
-    const startButton = document.querySelector("#startButton");
-    const statusEl = document.querySelector("#status");
+   const sceneEl = document.querySelector("#scene");
+  const startButton = document.querySelector("#startButton");
+  const statusEl = document.querySelector("#status");
+
+  startButton.addEventListener("click", async () => {
+    startButton.disabled = true;
+    startButton.textContent = "Проверяем камеру...";
+    statusEl.textContent = "Запрашиваем доступ к камере...";
+
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Safari не поддерживает доступ к камере через getUserMedia");
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: "environment" }
+        },
+        audio: false
+      });
+
+      stream.getTracks().forEach(track => track.stop());
+
+      statusEl.textContent =
+        "КАМЕРА РАБОТАЕТ. Теперь запускаем AR...";
+
+      const arSystem = sceneEl.systems["mindar-image-system"];
+
+      if (!arSystem) {
+        throw new Error("MindAR system не найден");
+      }
+
+      await arSystem.start();
+
+    } catch (error) {
+      console.error("CAMERA/AR ERROR:", error);
+
+      statusEl.textContent =
+        "Ошибка: " +
+        (error.name || "Unknown") +
+        (error.message ? " — " + error.message : "");
+
+      startButton.disabled = false;
+      startButton.textContent = "Попробовать снова";
+    }
+  });
+</script>
 
     sceneEl.addEventListener("arReady", () => {
       startButton.style.display = "none";
